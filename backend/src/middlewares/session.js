@@ -1,7 +1,7 @@
 const pool = require('../config/database');
 const crypto = require('crypto');
 
-const SESSION_TIMEOUT_MINUTES = parseInt(process.env.SESSION_TIMEOUT_MINUTES) || 10;
+const SESSION_TIMEOUT_MINUTES = parseInt(process.env.SESSION_TIMEOUT_MINUTES) || 60;
 
 const trackActivity = async (req, res, next) => {
   if (!req.user) return next();
