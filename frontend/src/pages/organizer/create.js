@@ -146,7 +146,7 @@ export default function CreateEvent() {
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
                 <input type="date" value={form.event_date} onChange={(e) => setForm({ ...form, event_date: e.target.value })} required
@@ -176,7 +176,7 @@ export default function CreateEvent() {
                     <button type="button" onClick={() => removeTicketType(idx)} className="text-red-500 text-sm">Remove</button>
                   )}
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Name</label>
                     <input type="text" value={tt.name} onChange={(e) => updateTicketType(idx, 'name', e.target.value)} required
