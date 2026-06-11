@@ -240,4 +240,70 @@ const changePassword = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, refresh, logout, getMe, changePassword };
+const googleAuth = async (req, res, next) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) {
+      return res.status(400).json({ error: 'Google credential required' });
+    }
+
+    const { OAuth2Client } = require('google-auth-library');
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+
+    const { email, name, sub } = payload;
+    const ip = req.ip || req.connection.remoteAddress;
+
+    let result = await pool.query(
+      'SELECT id, name, email, phone, role, is_active FROM users WHERE email = $1',
+      [email]
+    );
+
+    let user;
+    if (result.rows.length === 0) {
+      const generatedPhone = `09${sub.substring(0, 8)}`;
+      const hashedPassword = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12);
+      result = await pool.query(
+        `INSERT INTO users (name, email, phone, password, role)
+         VALUES ($1, $2, $3, $4, 'customer')
+         RETURNING id, name, email, phone, role, created_at`,
+        [name, email, generatedPhone, hashedPassword]
+      );
+      user = result.rows[0];
+    } else {
+      user = result.rows[0];
+      if (!user.is_active) {
+        return res.status(401).json({ error: 'Account deactivated. Contact support.' });
+      }
+    }
+
+    const { accessToken, refreshToken } = generateTokens(user.id);
+
+    await pool.query(
+      'INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)',
+      [user.id, crypto.createHash('sha256').update(refreshToken).digest('hex'),
+       new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)]
+    );
+
+    await createSession(user.id, accessToken, ip, req.headers['user-agent']);
+    await logSuccessfulLogin(user.id, ip);
+
+    res.json({
+      token: accessToken,
+      refreshToken,
+      expiresIn: 600,
+      user,
+    });
+  } catch (error) {
+    if (error.message?.includes('Invalid token signature') || error.message?.includes('Token used too late')) {
+      return res.status(401).json({ error: 'Invalid Google credential' });
+    }
+    next(error);
+  }
+};
+
+module.exports = { register, login, refresh, logout, getMe, changePassword, googleAuth };

@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 import toast from 'react-hot-toast';
 
 export default function Register() {
   const router = useRouter();
   const { register, user } = useAuth();
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '', role: 'customer' });
   const [loading, setLoading] = useState(false);
 
@@ -83,6 +85,49 @@ export default function Register() {
             {loading ? <span className="flex items-center justify-center gap-2"><span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" /> Creating account...</span> : 'Register'}
           </button>
         </form>
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
+          <div className="relative flex justify-center"><span className="bg-white px-4 text-sm text-gray-500">or continue with</span></div>
+        </div>
+
+        <div className="flex justify-center">
+          {googleLoading ? (
+            <span className="flex items-center gap-2 px-6 py-2 border rounded-lg text-sm text-gray-500">
+              <span className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full" />
+              Connecting...
+            </span>
+          ) : (
+            <GoogleLogin
+              onSuccess={async (credentialResponse) => {
+                setGoogleLoading(true);
+                try {
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ credential: credentialResponse.credential }),
+                  });
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.error);
+                  localStorage.setItem('accessToken', data.token);
+                  localStorage.setItem('refreshToken', data.refreshToken);
+                  window.location.href = '/tickets';
+                } catch (err) {
+                  toast.error(err.message || 'Google sign-up failed');
+                } finally {
+                  setGoogleLoading(false);
+                }
+              }}
+              onError={() => toast.error('Google sign-up failed')}
+              theme="outline"
+              size="large"
+              text="signup_with"
+              shape="rectangular"
+            />
+          )}
+        </div>
+
         <p className="text-center mt-4 text-sm text-gray-600">
           Already have an account? <Link href="/login" className="text-blue-600 font-medium hover:underline">Login</Link>
         </p>

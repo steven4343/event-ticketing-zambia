@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import '../styles/globals.css';
 import { Toaster } from 'react-hot-toast';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { connectSocket, disconnectSocket } from '../services/socket';
 
@@ -37,14 +38,24 @@ function AuthGuard({ children }) {
   return children;
 }
 
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+
 function App({ Component, pageProps }) {
-  return (
+  const content = (
     <AuthProvider>
       <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       <AuthGuard>
         <Component {...pageProps} />
       </AuthGuard>
     </AuthProvider>
+  );
+
+  if (!GOOGLE_CLIENT_ID) return content;
+
+  return (
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      {content}
+    </GoogleOAuthProvider>
   );
 }
 
