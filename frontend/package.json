@@ -1,0 +1,25 @@
+{
+  "name": "event-ticketing-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Event ticketing system frontend - Zambia",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^14.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "axios": "^1.7.7",
+    "qrcode.react": "^4.0.1",
+    "react-hot-toast": "^2.4.1",
+    "socket.io-client": "^4.7.5"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13"
+  }
+}
