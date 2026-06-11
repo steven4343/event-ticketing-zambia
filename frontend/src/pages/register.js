@@ -112,6 +112,7 @@ export default function Register() {
                   if (!res.ok) throw new Error(data.error);
                   localStorage.setItem('accessToken', data.token);
                   localStorage.setItem('refreshToken', data.refreshToken);
+                  localStorage.setItem('token', data.token);
                   window.location.href = '/tickets';
                 } catch (err) {
                   toast.error(err.message || 'Google sign-up failed');

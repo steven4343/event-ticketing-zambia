@@ -54,19 +54,21 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const initAuth = async () => {
-      const accessToken = localStorage.getItem('accessToken');
+      const accessToken = localStorage.getItem('accessToken') || localStorage.getItem('token');
       if (!accessToken) {
         const refreshToken = localStorage.getItem('refreshToken');
         if (refreshToken) {
           try {
             const { data } = await api.post('/auth/refresh', { refreshToken });
             localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('token', data.accessToken);
             localStorage.setItem('refreshToken', data.refreshToken);
             api.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
             const me = await api.get('/auth/me');
             setUser(me.data);
           } catch {
             localStorage.removeItem('accessToken');
+            localStorage.removeItem('token');
             localStorage.removeItem('refreshToken');
           }
         }
@@ -80,6 +82,7 @@ export function AuthProvider({ children }) {
         resetInactivityTimer();
       } catch {
         localStorage.removeItem('accessToken');
+        localStorage.removeItem('token');
       }
       setLoading(false);
     };
@@ -89,6 +92,7 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password });
     localStorage.setItem('accessToken', data.token);
+    localStorage.setItem('token', data.token);
     localStorage.setItem('refreshToken', data.refreshToken);
     api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
     setUser(data.user);
@@ -99,6 +103,7 @@ export function AuthProvider({ children }) {
   const register = async (formData) => {
     const { data } = await api.post('/auth/register', formData);
     localStorage.setItem('accessToken', data.accessToken);
+    localStorage.setItem('token', data.accessToken);
     localStorage.setItem('refreshToken', data.refreshToken);
     api.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
     setUser(data.user);

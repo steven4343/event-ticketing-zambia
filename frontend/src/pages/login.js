@@ -51,10 +51,8 @@ export default function Login() {
 
       localStorage.setItem('accessToken', data.token);
       localStorage.setItem('refreshToken', data.refreshToken);
-      const api = (await import('../services/api')).default;
-      api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+      localStorage.setItem('token', data.token);
 
-      const { useAuth } = await import('../context/AuthContext');
       window.location.href = data.user.role === 'organizer' ? '/organizer/dashboard' : '/tickets';
     } catch (err) {
       toast.error(err.message || 'Google login failed');

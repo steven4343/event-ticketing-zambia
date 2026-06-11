@@ -126,8 +126,8 @@ const createEvent = async (req, res, next) => {
     await client.query('BEGIN');
 
     const eventResult = await client.query(
-      `INSERT INTO events (title, description, venue, event_date, event_time, banner_image, organizer_id, category_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO events (title, description, venue, event_date, event_time, banner_image, organizer_id, category_id, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending')
        RETURNING id, title, status`,
       [title, description, venue, event_date, event_time, banner_image, req.user.id, category_id]
     );
