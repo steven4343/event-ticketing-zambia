@@ -33,13 +33,13 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
-        <nav className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="text-xl font-bold text-blue-600">EventHub Admin</Link>
-          <div className="flex items-center gap-4">
+        <nav className="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center gap-2">
+          <Link href="/" className="text-lg sm:text-xl font-bold text-blue-600">EventHub Admin</Link>
+          <div className="flex items-center gap-2 sm:gap-4 ml-auto flex-wrap">
             <NotificationBell />
-            <Link href="/admin/users" className="text-blue-600 text-sm">Users</Link>
-            <Link href="/admin/events" className="text-blue-600 text-sm">Events</Link>
-            <span className="text-sm text-gray-600">{user?.name}</span>
+            <Link href="/admin/users" className="text-blue-600 text-xs sm:text-sm">Users</Link>
+            <Link href="/admin/events" className="text-blue-600 text-xs sm:text-sm">Events</Link>
+            <span className="text-xs sm:text-sm text-gray-600 truncate max-w-[80px]">{user?.name}</span>
           </div>
         </nav>
       </header>

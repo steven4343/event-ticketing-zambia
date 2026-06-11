@@ -52,22 +52,22 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
       <SessionWarning />
       <header className="bg-white shadow-sm sticky top-0 z-10">
-        <nav className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold text-blue-600">EventHub Zambia</Link>
-          <div className="flex items-center gap-4">
+        <nav className="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center gap-2">
+          <Link href="/" className="text-xl sm:text-2xl font-bold text-blue-600">EventHub Zambia</Link>
+          <div className="flex items-center gap-2 sm:gap-4 ml-auto flex-wrap">
             {user ? (
               <>
-                {user.role === 'super_admin' && <Link href="/admin" className="text-blue-600 text-sm font-medium">Admin</Link>}
-                <Link href={user.role === 'organizer' ? '/organizer/dashboard' : '/tickets'} className="text-blue-600 font-medium">
+                {user.role === 'super_admin' && <Link href="/admin" className="text-blue-600 text-xs sm:text-sm font-medium">Admin</Link>}
+                <Link href={user.role === 'organizer' ? '/organizer/dashboard' : '/tickets'} className="text-blue-600 text-xs sm:text-sm font-medium">
                   {user.role === 'organizer' ? 'Dashboard' : 'My Tickets'}
                 </Link>
                 <NotificationBell />
-                <Link href="/profile" className="text-sm text-gray-600">{user.name}</Link>
+                <span className="text-xs sm:text-sm text-gray-600 truncate max-w-[100px]">{user.name}</span>
               </>
             ) : (
               <>
-                <Link href="/login" className="px-4 py-2 text-blue-600 font-medium">Login</Link>
-                <Link href="/register" className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">Register</Link>
+                <Link href="/login" className="px-3 sm:px-4 py-2 text-blue-600 text-sm font-medium">Login</Link>
+                <Link href="/register" className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium">Register</Link>
               </>
             )}
           </div>
@@ -76,19 +76,19 @@ export default function Home() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <section className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Discover Events in Zambia</h1>
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-4">Discover Events in Zambia</h1>
           <p className="text-lg text-gray-600">Buy tickets for concerts, conferences, sports, and more</p>
         </section>
 
-        <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-8 flex gap-3">
+        <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-8 flex flex-col sm:flex-row gap-3">
           <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
             placeholder="Search events..." className="flex-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
           <select value={categoryId} onChange={(e) => { setCategoryId(e.target.value); setPage(1); }}
-            className="px-4 py-3 border rounded-lg bg-white">
+            className="px-4 py-3 border rounded-lg bg-white w-full sm:w-auto">
             <option value="">All Categories</option>
             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-          <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700">Search</button>
+          <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 w-full sm:w-auto">Search</button>
         </form>
 
         <section>

@@ -39,12 +39,12 @@ export default function MyTickets() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
-        <nav className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="text-xl font-bold text-blue-600">EventHub Zambia</Link>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user?.name}</span>
+        <nav className="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center gap-2">
+          <Link href="/" className="text-lg sm:text-xl font-bold text-blue-600">EventHub Zambia</Link>
+          <div className="flex items-center gap-2 sm:gap-4 ml-auto">
+            <span className="text-xs sm:text-sm text-gray-600 truncate max-w-[80px]">{user?.name}</span>
             <NotificationBell />
-            <Link href="/profile" className="text-blue-600 text-sm">Profile</Link>
+            <Link href="/profile" className="text-blue-600 text-xs sm:text-sm">Profile</Link>
           </div>
         </nav>
       </header>

@@ -51,19 +51,19 @@ export default function AdminEvents() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
-        <nav className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/admin" className="text-xl font-bold text-blue-600"><span aria-hidden="true">←</span> Admin</Link>
-          <span className="text-lg font-semibold">Events Management</span>
+        <nav className="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center gap-2">
+          <Link href="/admin" className="text-lg sm:text-xl font-bold text-blue-600"><span aria-hidden="true">←</span> Admin</Link>
+          <span className="text-sm sm:text-lg font-semibold flex-1 text-center">Events</span>
           <NotificationBell />
         </nav>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <Breadcrumbs pathname={router.pathname} />
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">All Events ({total})</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold">All Events ({total})</h1>
           <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="px-4 py-2 border rounded-lg bg-white">
+            className="px-4 py-2 border rounded-lg bg-white w-full sm:w-auto">
             <option value="">All Status</option>
             <option value="draft">Draft</option>
             <option value="pending">Pending</option>

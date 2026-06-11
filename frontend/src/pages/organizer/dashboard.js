@@ -59,13 +59,13 @@ export default function OrganizerDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
-        <nav className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="text-xl font-bold text-blue-600">EventHub Zambia</Link>
-          <div className="flex items-center gap-4">
+        <nav className="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center gap-2">
+          <Link href="/" className="text-lg sm:text-xl font-bold text-blue-600">EventHub Zambia</Link>
+          <div className="flex items-center gap-2 sm:gap-4 ml-auto flex-wrap">
             <NotificationBell />
-            <Link href="/organizer/create" className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700">+ Create Event</Link>
-            <span className="text-sm text-gray-600">{user?.name}</span>
-            <Link href="/profile" className="text-blue-600 text-sm">Profile</Link>
+            <Link href="/organizer/create" className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 whitespace-nowrap">+ Create</Link>
+            <span className="text-xs sm:text-sm text-gray-600 truncate max-w-[80px]">{user?.name}</span>
+            <Link href="/profile" className="text-blue-600 text-xs sm:text-sm">Profile</Link>
           </div>
         </nav>
       </header>
@@ -75,7 +75,7 @@ export default function OrganizerDashboard() {
         <h1 className="text-2xl font-bold mb-6">Organizer Dashboard</h1>
 
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+          <div className="grid grid-cols-3 md:grid-cols-5 gap-4 mb-8">
             <div className="bg-white rounded-lg shadow-sm p-4 text-center">
               <p className="text-2xl font-bold text-blue-600">{stats.total_events}</p>
               <p className="text-xs text-gray-500 mt-1">Total Events</p>
@@ -100,7 +100,7 @@ export default function OrganizerDashboard() {
         )}
 
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="p-4 border-b flex justify-between items-center">
+          <div className="p-4 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <h2 className="font-semibold">Your Events</h2>
             <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
               className="px-3 py-1 border rounded-lg text-sm bg-white">

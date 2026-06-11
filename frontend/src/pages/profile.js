@@ -42,9 +42,9 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
-        <nav className="max-w-3xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="text-xl font-bold text-blue-600">EventHub Zambia</Link>
-          <div className="flex items-center gap-4">
+        <nav className="max-w-3xl mx-auto px-4 py-4 flex flex-wrap items-center gap-2">
+          <Link href="/" className="text-lg sm:text-xl font-bold text-blue-600">EventHub Zambia</Link>
+          <div className="flex items-center gap-2 sm:gap-4 ml-auto">
             <NotificationBell />
             <button onClick={logout} className="text-red-600 text-sm font-medium">Logout</button>
           </div>
@@ -56,7 +56,7 @@ export default function Profile() {
         <h1 className="text-2xl font-bold mb-6">My Profile</h1>
 
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-sm text-gray-500">Name</label>
               <p className="font-medium">{user.name}</p>

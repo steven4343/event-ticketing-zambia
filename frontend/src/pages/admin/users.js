@@ -55,26 +55,26 @@ export default function AdminUsers() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
-        <nav className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/admin" className="text-xl font-bold text-blue-600"><span aria-hidden="true">←</span> Admin</Link>
-          <span className="text-lg font-semibold">Users Management</span>
+        <nav className="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center gap-2">
+          <Link href="/admin" className="text-lg sm:text-xl font-bold text-blue-600"><span aria-hidden="true">←</span> Admin</Link>
+          <span className="text-sm sm:text-lg font-semibold flex-1 text-center">Users</span>
           <NotificationBell />
         </nav>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <Breadcrumbs pathname={router.pathname} />
-        <form onSubmit={handleSearch} className="flex gap-3 mb-6">
+        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 mb-6">
           <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name or email..." className="flex-1 px-4 py-2 border rounded-lg" />
           <select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
-            className="px-4 py-2 border rounded-lg bg-white">
+            className="px-4 py-2 border rounded-lg bg-white w-full sm:w-auto">
             <option value="">All Roles</option>
             <option value="customer">Customers</option>
             <option value="organizer">Organizers</option>
             <option value="super_admin">Admins</option>
           </select>
-          <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-lg">Search</button>
+          <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-lg w-full sm:w-auto">Search</button>
         </form>
 
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -83,18 +83,19 @@ export default function AdminUsers() {
           ) : users.length === 0 ? (
             <EmptyState title="No users found" message="Try adjusting your search" />
           ) : (
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Name</th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Email</th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Phone</th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Role</th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Status</th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Name</th>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Email</th>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Phone</th>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Role</th>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Status</th>
+                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
                 {users.map((u) => (
                   <tr key={u.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 font-medium">{u.name}</td>
@@ -114,6 +115,7 @@ export default function AdminUsers() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
 
           {total > 20 && (

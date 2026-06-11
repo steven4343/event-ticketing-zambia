@@ -57,13 +57,13 @@ export default function Scanner() {
       <main className="max-w-lg mx-auto px-4 py-8">
         <form onSubmit={handleValidate} className="mb-8">
           <label className="block text-sm font-medium text-gray-400 mb-2">Scan or Enter Ticket Code</label>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-col sm:flex-row">
             <input
               type="text"
               value={ticketCode}
               onChange={(e) => setTicketCode(e.target.value.toUpperCase())}
               placeholder="EVT-2026-XXXXXXXX"
-              className="flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white font-mono text-lg focus:border-blue-500 focus:outline-none"
+              className="flex-1 px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white font-mono text-base sm:text-lg focus:border-blue-500 focus:outline-none"
               autoFocus
             />
             <button type="submit" disabled={loading || !ticketCode.trim()}
