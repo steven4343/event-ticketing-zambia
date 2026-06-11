@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getEventStats, exportAttendees, getSalesReport } from '../../services/api';
+import { getEventStats, exportAttendees, getSalesReport } from '../../../services/api';
 import toast from 'react-hot-toast';
 
 export default function EventStats() {
