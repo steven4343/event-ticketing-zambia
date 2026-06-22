@@ -369,6 +369,148 @@ const toggleTicketType = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+/* ============= DISCOUNT CODES (FR-061/062/063) ============= */
+
+const listDiscountCodes = async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      `SELECT dc.*, e.title as event_title FROM discount_codes dc
+       LEFT JOIN events e ON e.id = dc.event_id
+       WHERE dc.event_id IN (SELECT id FROM events WHERE organizer_id = $1) OR dc.event_id IS NULL
+       ORDER BY dc.created_at DESC`,
+      [req.user.id]
+    );
+    res.json({ codes: result.rows });
+  } catch (error) { next(error); }
+};
+
+const createDiscountCode = async (req, res, next) => {
+  try {
+    const { event_id, code, discount_type, discount_value, max_uses, expires_at } = req.body;
+    if (!code || !discount_type || discount_value === undefined) {
+      return res.status(400).json({ error: 'code, discount_type, and discount_value are required' });
+    }
+    if (!['percentage', 'fixed'].includes(discount_type)) {
+      return res.status(400).json({ error: 'discount_type must be percentage or fixed' });
+    }
+
+    if (event_id) {
+      const ev = await pool.query('SELECT id FROM events WHERE id = $1 AND organizer_id = $2', [event_id, req.user.id]);
+      if (ev.rows.length === 0) return res.status(404).json({ error: 'Event not found or not yours' });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO discount_codes (event_id, code, discount_type, discount_value, max_uses, expires_at)
+       VALUES ($1, UPPER($2), $3, $4, $5, $6) RETURNING *`,
+      [event_id || null, code, discount_type, discount_value, max_uses || null, expires_at || null]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    if (error.code === '23505') return res.status(409).json({ error: 'Code already exists' });
+    next(error);
+  }
+};
+
+const updateDiscountCode = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { is_active, max_uses, expires_at } = req.body;
+
+    const result = await pool.query(
+      `UPDATE discount_codes SET
+        is_active = COALESCE($1, is_active),
+        max_uses = COALESCE($2, max_uses),
+        expires_at = COALESCE($3, expires_at)
+       WHERE id = $4 AND event_id IN (SELECT id FROM events WHERE organizer_id = $5)
+       RETURNING *`,
+      [is_active, max_uses, expires_at, id, req.user.id]
+    );
+
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Discount code not found' });
+    res.json(result.rows[0]);
+  } catch (error) { next(error); }
+};
+
+const deleteDiscountCode = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(
+      `DELETE FROM discount_codes WHERE id = $1 AND event_id IN (SELECT id FROM events WHERE organizer_id = $2) RETURNING id`,
+      [id, req.user.id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Discount code not found' });
+    res.json({ message: 'Discount code deleted' });
+  } catch (error) { next(error); }
+};
+
+/* ============= SUBSCRIPTION ADMIN VIEW (FR-055) ============= */
+
+const listAllSubscriptions = async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      `SELECT s.*, u.name as organizer_name, u.email as organizer_email
+       FROM subscriptions s
+       JOIN users u ON u.id = s.organizer_id
+       ORDER BY s.created_at DESC`
+    );
+    res.json({ subscriptions: result.rows });
+  } catch (error) { next(error); }
+};
+
+/* ============= OFFLINE SCANNER SYNC (FR-038) ============= */
+
+const syncEventTickets = async (req, res, next) => {
+  try {
+    const { event_id } = req.params;
+
+    const eventCheck = await pool.query(
+      'SELECT id, title, event_date FROM events WHERE id = $1', [event_id]
+    );
+    if (eventCheck.rows.length === 0) return res.status(404).json({ error: 'Event not found' });
+
+    const tickets = await pool.query(
+      `SELECT t.id, t.ticket_code, t.qr_code, t.status, t.checked_in_at,
+              u.name as attendee_name, tt.name as ticket_type_name
+       FROM tickets t
+       JOIN users u ON u.id = t.user_id
+       JOIN ticket_types tt ON tt.id = t.ticket_type_id
+       WHERE t.event_id = $1
+       ORDER BY t.created_at`,
+      [event_id]
+    );
+
+    res.json({
+      event: eventCheck.rows[0],
+      tickets: tickets.rows,
+      synced_at: new Date().toISOString(),
+    });
+  } catch (error) { next(error); }
+};
+
+const bulkCheckIn = async (req, res, next) => {
+  try {
+    const { check_ins } = req.body;
+    if (!Array.isArray(check_ins)) return res.status(400).json({ error: 'check_ins array required' });
+
+    const results = [];
+    for (const { ticket_code } of check_ins) {
+      const result = await pool.query(
+        `UPDATE tickets SET status = 'used', checked_in_at = CURRENT_TIMESTAMP
+         WHERE ticket_code = $1 AND status = 'active'
+         RETURNING id, ticket_code`,
+        [ticket_code]
+      );
+      results.push({
+        ticket_code,
+        success: result.rows.length > 0,
+      });
+    }
+
+    res.json({ results });
+  } catch (error) { next(error); }
+};
+
 module.exports = {
   joinWaitlist, leaveWaitlist, getMyWaitlist,
   getMyAffiliate, getAffiliateOrders,
@@ -379,4 +521,7 @@ module.exports = {
   updateOrganizerCommission,
   updatePlatformSettings,
   toggleTicketType,
+  listDiscountCodes, createDiscountCode, updateDiscountCode, deleteDiscountCode,
+  listAllSubscriptions,
+  syncEventTickets, bulkCheckIn,
 };

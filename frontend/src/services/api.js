@@ -154,4 +154,17 @@ export const updatePlatformSettings = (settings) => api.put('/admin/settings', {
 // Ticket type toggle
 export const toggleTicketType = (id, is_active) => api.patch(`/ticket-types/${id}/toggle`, { is_active });
 
+// Discount codes
+export const listDiscountCodes = () => api.get('/discount-codes');
+export const createDiscountCode = (data) => api.post('/discount-codes', data);
+export const updateDiscountCode = (id, data) => api.patch(`/discount-codes/${id}`, data);
+export const deleteDiscountCode = (id) => api.delete(`/discount-codes/${id}`);
+
+// Admin subscriptions
+export const listAllSubscriptions = () => api.get('/admin/subscriptions');
+
+// Scanner sync
+export const syncEventTickets = (eventId) => api.get(`/scanner/sync/${eventId}`);
+export const bulkCheckIn = (checkIns) => api.post('/scanner/bulk-checkin', { check_ins: checkIns });
+
 export default api;

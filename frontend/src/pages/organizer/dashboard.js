@@ -64,6 +64,7 @@ export default function OrganizerDashboard() {
           <Link href="/" className="text-lg sm:text-xl font-bold text-blue-600">EventHub Zambia</Link>
           <div className="flex items-center gap-2 sm:gap-4 ml-auto flex-wrap">
             <NotificationBell />
+            <Link href="/organizer/discount-codes" className="text-blue-600 text-xs sm:text-sm">Discounts</Link>
             <Link href="/organizer/create" className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 whitespace-nowrap">+ Create</Link>
             <span className="text-xs sm:text-sm text-gray-600 truncate max-w-[80px]">{user?.name}</span>
             <Link href="/profile" className="text-blue-600 text-xs sm:text-sm">Profile</Link>

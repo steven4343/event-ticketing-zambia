@@ -10,6 +10,9 @@ const {
   updateOrganizerCommission,
   updatePlatformSettings,
   toggleTicketType,
+  listDiscountCodes, createDiscountCode, updateDiscountCode, deleteDiscountCode,
+  listAllSubscriptions,
+  syncEventTickets, bulkCheckIn,
 } = require('../controllers/extendController');
 
 const router = Router();
@@ -54,5 +57,18 @@ router.put('/admin/settings', authenticate, authorize('super_admin'), updatePlat
 
 /* Ticket type toggle (FR-030) */
 router.patch('/ticket-types/:id/toggle', authenticate, authorize('organizer'), toggleTicketType);
+
+/* Discount codes (FR-061/062/063) */
+router.get('/discount-codes', authenticate, authorize('organizer'), listDiscountCodes);
+router.post('/discount-codes', authenticate, authorize('organizer'), createDiscountCode);
+router.patch('/discount-codes/:id', authenticate, authorize('organizer'), updateDiscountCode);
+router.delete('/discount-codes/:id', authenticate, authorize('organizer'), deleteDiscountCode);
+
+/* Admin subscription view (FR-055) */
+router.get('/admin/subscriptions', authenticate, authorize('super_admin'), listAllSubscriptions);
+
+/* Offline scanner sync (FR-038) */
+router.get('/scanner/sync/:event_id', authenticate, authorize('organizer', 'super_admin'), syncEventTickets);
+router.post('/scanner/bulk-checkin', authenticate, authorize('organizer', 'super_admin'), bulkCheckIn);
 
 module.exports = router;
