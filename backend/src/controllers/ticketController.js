@@ -7,6 +7,7 @@ const { processMTNPayment } = require('../services/mtn');
 const { processAirtelPayment } = require('../services/airtel');
 const { processZamtelPayment } = require('../services/zamtel');
 const { emitToUser, emitToEvent } = require('../config/socket');
+const PDFDocument = require('pdfkit');
 const { invalidateCache } = require('../config/redis');
 const { createNotification } = require('./notificationController');
 
@@ -300,4 +301,78 @@ const getMyTickets = async (req, res, next) => {
   }
 };
 
-module.exports = { purchase, paymentCallback, getMyTickets };
+const downloadTicket = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      `SELECT t.id, t.ticket_code, t.qr_code, t.status, t.created_at,
+              e.title as event_title, e.event_date, e.venue, e.event_time,
+              tt.name as ticket_type_name, tt.price,
+              u.name as user_name, u.email
+       FROM tickets t
+       JOIN events e ON e.id = t.event_id
+       JOIN ticket_types tt ON tt.id = t.ticket_type_id
+       JOIN users u ON u.id = t.user_id
+       WHERE t.id = $1 AND t.user_id = $2`,
+      [id, req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    const ticket = result.rows[0];
+
+    const doc = new PDFDocument({ size: [612, 360], margin: 30 });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="ticket-${ticket.ticket_code}.pdf"`);
+    doc.pipe(res);
+
+    const bgColor = '#1e3a5f';
+    const accentColor = '#2563eb';
+    const lightBg = '#f8fafc';
+
+    doc.rect(0, 0, 612, 360).fill(bgColor);
+
+    doc.rect(20, 20, 572, 320).fill('#ffffff');
+
+    doc.rect(20, 20, 572, 60).fill(accentColor);
+    doc.fill('#ffffff').fontSize(22).font('Helvetica-Bold')
+      .text('EVENTHUB ZAMBIA', 40, 35, { width: 400 });
+    doc.fontSize(10).font('Helvetica')
+      .text('Digital Ticket', 40, 60);
+
+    doc.fill('#333333').fontSize(18).font('Helvetica-Bold')
+      .text(ticket.event_title, 40, 100);
+
+    doc.fontSize(11).font('Helvetica')
+      .text(`Date: ${new Date(ticket.event_date).toLocaleDateString('en-ZM', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`, 40, 130);
+    doc.text(`Time: ${ticket.event_time?.substring(0, 5)}`, 40, 148);
+    doc.text(`Venue: ${ticket.venue}`, 40, 166);
+
+    doc.fill('#666666').fontSize(10).font('Helvetica')
+      .text(`Ticket: ${ticket.ticket_type_name}`, 40, 194);
+    doc.text(`Price: K${parseFloat(ticket.price).toFixed(2)}`, 40, 210);
+    doc.text(`Attendee: ${ticket.user_name}`, 40, 226);
+
+    doc.fontSize(8).font('Helvetica').fill('#999999')
+      .text(`Code: ${ticket.ticket_code}`, 40, 252);
+
+    if (ticket.qr_code) {
+      const qrBase64 = ticket.qr_code.replace(/^data:image\/png;base64,/, '');
+      const img = Buffer.from(qrBase64, 'base64');
+      doc.image(img, 400, 100, { width: 110, height: 110 });
+    }
+
+    doc.rect(20, 300, 572, 40).fill(lightBg);
+    doc.fill('#666666').fontSize(8).font('Helvetica')
+      .text('Present this QR code at the event entrance for scanning.', 40, 312, { width: 500 });
+
+    doc.end();
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { purchase, paymentCallback, getMyTickets, downloadTicket };
