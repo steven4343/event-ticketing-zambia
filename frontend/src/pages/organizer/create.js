@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { createEvent, updateEvent, getEvent, getCategories } from '../../services/api';
+import { createEvent, updateEvent, getEvent, getCategories, uploadImage } from '../../services/api';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import toast from 'react-hot-toast';
 
@@ -11,11 +11,14 @@ export default function CreateEvent() {
   const isEditing = Boolean(id);
   const [categories, setCategories] = useState([]);
   const [form, setForm] = useState({
-    title: '', description: '', venue: '', event_date: '', event_time: '', category_id: '',
+    title: '', description: '', venue: '', event_date: '', event_time: '', category_id: '', banner_image: '',
   });
   const [ticketTypes, setTicketTypes] = useState([
     { name: 'Regular', description: 'Standard entry', price: '', quantity: '' },
   ]);
+  const [bannerFile, setBannerFile] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState('');
+  const [uploadingBanner, setUploadingBanner] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(isEditing);
 
@@ -35,7 +38,9 @@ export default function CreateEvent() {
           event_date: data.event_date?.split('T')[0] || '',
           event_time: data.event_time?.substring(0, 5) || '',
           category_id: data.category_id || '',
+          banner_image: data.banner_image || '',
         });
+        if (data.banner_image) setBannerPreview(data.banner_image);
         if (data.ticket_types?.length) {
           setTicketTypes(data.ticket_types.map(tt => ({
             name: tt.name,
@@ -75,8 +80,18 @@ export default function CreateEvent() {
     setLoading(true);
 
     try {
+      let bannerUrl = form.banner_image;
+
+      if (bannerFile) {
+        setUploadingBanner(true);
+        const { data } = await uploadImage(bannerFile);
+        bannerUrl = data.url;
+        setUploadingBanner(false);
+      }
+
       const payload = {
         ...form,
+        banner_image: bannerUrl,
         category_id: form.category_id || null,
         ticket_types: ticketTypes.map(tt => ({
           ...tt,
@@ -96,6 +111,7 @@ export default function CreateEvent() {
     } catch (err) {
       toast.error(err.response?.data?.error || `Failed to ${isEditing ? 'update' : 'create'} event`);
     } finally {
+      setUploadingBanner(false);
       setLoading(false);
     }
   };
@@ -137,6 +153,31 @@ export default function CreateEvent() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Venue</label>
               <input type="text" value={form.venue} onChange={(e) => setForm({ ...form, venue: e.target.value })} required
                 className="w-full px-4 py-2 border rounded-lg" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Banner Image</label>
+              <div className="flex items-start gap-4">
+                <div className="flex-1">
+                  <input type="file" accept="image/jpeg,image/png,image/gif,image/webp"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setBannerFile(file);
+                        setBannerPreview(URL.createObjectURL(file));
+                      }
+                    }}
+                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100" />
+                </div>
+                {bannerPreview && (
+                  <div className="relative w-32 h-20 flex-shrink-0">
+                    <img src={bannerPreview} alt="Preview" className="w-full h-full object-cover rounded-lg border" />
+                    <button type="button" onClick={() => { setBannerFile(null); setBannerPreview(''); setForm(f => ({ ...f, banner_image: '' })); }}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
+                      ×
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
@@ -202,9 +243,9 @@ export default function CreateEvent() {
             ))}
           </div>
 
-          <button type="submit" disabled={loading}
+          <button type="submit" disabled={loading || uploadingBanner}
             className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold disabled:opacity-50 hover:bg-blue-700">
-            {loading ? 'Saving...' : isEditing ? 'Update Event' : 'Create Event'}
+            {uploadingBanner ? 'Uploading banner...' : loading ? 'Saving...' : isEditing ? 'Update Event' : 'Create Event'}
           </button>
         </form>
       </main>

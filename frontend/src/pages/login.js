@@ -87,13 +87,14 @@ export default function Login() {
           <div className="relative flex justify-center"><span className="bg-white px-4 text-sm text-gray-500">or continue with</span></div>
         </div>
 
-        <div className="flex justify-center">
-          {googleLoading ? (
-            <span className="flex items-center gap-2 px-6 py-2 border rounded-lg text-sm text-gray-500">
+        <div className="flex justify-center relative">
+          {googleLoading && (
+            <span className="absolute inset-0 flex items-center justify-center gap-2 px-6 py-2 border rounded-lg text-sm text-gray-500 bg-white z-10">
               <span className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full" />
               Connecting...
             </span>
-          ) : (
+          )}
+          <div className={googleLoading ? 'invisible' : ''}>
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={() => toast.error('Google login failed')}
@@ -101,8 +102,9 @@ export default function Login() {
               size="large"
               text="signin_with"
               shape="rectangular"
+              autoLoad={false}
             />
-          )}
+          </div>
         </div>
 
         <p className="text-center mt-4 text-sm text-gray-600">

@@ -104,6 +104,15 @@ export const getCommissions = (params) => api.get('/admin/commissions', { params
 export const markCommissionPaid = (id) => api.patch(`/admin/commissions/${id}/pay`);
 export const getSettings = () => api.get('/admin/settings');
 
+// Upload
+export const uploadImage = (file) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  return api.post('/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
+
 // Notifications
 export const getNotifications = (params) => api.get('/notifications', { params });
 export const markNotificationRead = (id) => api.patch(`/notifications/${id}/read`);

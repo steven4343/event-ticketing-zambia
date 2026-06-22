@@ -8,12 +8,12 @@ A full-stack event ticketing platform built for the Zambian market. Supports MTN
 
 | Layer | Technology |
 |-------|-----------|
-| **Backend** | Node.js 20, Express 4 |
-| **Frontend** | Next.js 14, React 18, Tailwind CSS 3 |
+| **Backend** | Node.js 20, Express 4 — hosted on [Render](https://render.com) |
+| **Frontend** | Next.js 14, React 18, Tailwind CSS 3 — hosted on [Vercel](https://vercel.com) |
 | **Database** | PostgreSQL 16 (Neon Serverless) |
 | **Cache** | Redis 7 (optional — degrades gracefully) |
 | **Real-time** | Socket.IO 4 |
-| **Auth** | JWT (access 10min + refresh 7d), bcryptjs, CSRF double-submit cookie |
+| **Auth** | JWT (access 10min + refresh 7d) + Google OAuth (Firebase), bcryptjs, CSRF double-submit cookie |
 | **Payments** | MTN MoMo / Airtel Money / Zamtel Kwacha (stub — needs live API keys) |
 
 ---
