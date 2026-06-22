@@ -14,6 +14,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [cityFilter, setCityFilter] = useState('');
+  const [regionFilter, setRegionFilter] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -24,6 +26,8 @@ export default function Home() {
       const params = { page, limit: 12 };
       if (search) params.search = search;
       if (categoryId) params.category_id = categoryId;
+      if (cityFilter) params.city = cityFilter;
+      if (regionFilter) params.region = regionFilter;
       const { data } = await getEvents(params);
       setEvents(data.events);
       setTotalPages(data.pages);
@@ -33,7 +37,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, categoryId]);
+  }, [page, search, categoryId, cityFilter, regionFilter]);
 
   useEffect(() => {
     fetchEvents();
@@ -87,6 +91,22 @@ export default function Home() {
             className="px-4 py-3 border rounded-lg bg-white w-full sm:w-auto">
             <option value="">All Categories</option>
             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+          <input type="text" value={cityFilter} onChange={(e) => { setCityFilter(e.target.value); setPage(1); }}
+            placeholder="City..." className="px-4 py-3 border rounded-lg w-full sm:w-32" />
+          <select value={regionFilter} onChange={(e) => { setRegionFilter(e.target.value); setPage(1); }}
+            className="px-4 py-3 border rounded-lg bg-white w-full sm:w-auto">
+            <option value="">All Regions</option>
+            <option value="Lusaka">Lusaka</option>
+            <option value="Copperbelt">Copperbelt</option>
+            <option value="Southern">Southern</option>
+            <option value="Central">Central</option>
+            <option value="Eastern">Eastern</option>
+            <option value="Western">Western</option>
+            <option value="Northern">Northern</option>
+            <option value="Luapula">Luapula</option>
+            <option value="Muchinga">Muchinga</option>
+            <option value="North-Western">North-Western</option>
           </select>
           <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 w-full sm:w-auto">Search</button>
         </form>
