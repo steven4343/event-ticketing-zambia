@@ -19,6 +19,8 @@ export default function EventDetail() {
   const [provider, setProvider] = useState('mtn');
   const [purchasing, setPurchasing] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [discountCode, setDiscountCode] = useState('');
+  const [discountApplied, setDiscountApplied] = useState(null);
 
   useEffect(() => {
     if (!id) return;
@@ -63,10 +65,13 @@ export default function EventDetail() {
         .filter(([_, qty]) => qty > 0)
         .map(([typeId, qty]) => ({ ticket_type_id: typeId, quantity: qty }));
 
-      const { data } = await purchaseTickets({
+      const payload = {
         event_id: id, tickets,
         payment_provider: provider, phone,
-      });
+      };
+      if (discountCode) payload.discount_code = discountCode;
+
+      const { data } = await purchaseTickets(payload);
 
       toast.success('Payment request sent! Check your phone.');
       router.push('/tickets');
@@ -159,6 +164,21 @@ export default function EventDetail() {
                 <option value="zamtel">Zamtel Kwacha</option>
               </select>
             </div>
+          </div>
+
+          <div className="mt-6 p-4 border rounded-lg">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Discount Code</label>
+            <div className="flex gap-2">
+              <input type="text" value={discountCode} onChange={(e) => { setDiscountCode(e.target.value); setDiscountApplied(null); }}
+                placeholder="Enter code" className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 uppercase" />
+              <button type="button" onClick={() => {
+                if (discountCode) setDiscountApplied({ code: discountCode, type: 'pending' });
+                else toast.error('Enter a code first');
+              }} className="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700">Apply</button>
+            </div>
+            {discountApplied && (
+              <p className="text-green-600 text-sm mt-1">Code "{discountApplied.code}" will be applied at checkout</p>
+            )}
           </div>
 
           <div className="mt-6 flex items-center justify-between p-4 bg-gray-50 rounded-lg">
