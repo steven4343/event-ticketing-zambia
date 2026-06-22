@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { getMyTickets, api } from '../services/api';
+import api, { getMyTickets } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { QRCodeSVG } from 'qrcode.react';
 import Breadcrumbs from '../components/Breadcrumbs';

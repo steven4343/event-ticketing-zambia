@@ -9,14 +9,18 @@
     "start": "next start"
   },
   "dependencies": {
+    "@next/swc-win32-x64-msvc": "^16.2.9",
     "@react-oauth/google": "^0.13.5",
+    "asynckit": "^0.5.0",
     "axios": "^1.7.7",
     "next": "^14.2.0",
     "qrcode.react": "^4.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-hot-toast": "^2.4.1",
-    "socket.io-client": "^4.7.5"
+    "react-hot-toast": "^2.6.0",
+    "recharts": "^3.8.1",
+    "socket.io-client": "^4.7.5",
+    "ts-interface-checker": "^1.0.2"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",

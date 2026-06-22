@@ -7,6 +7,7 @@ import { getSocket } from '../../services/socket';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import NotificationBell from '../../components/NotificationBell';
 import EmptyState from '../../components/EmptyState';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function OrganizerDashboard() {
   const { user } = useAuth();
@@ -96,6 +97,20 @@ export default function OrganizerDashboard() {
               <p className="text-2xl font-bold text-red-600">K{parseFloat(stats.total_revenue || 0).toLocaleString()}</p>
               <p className="text-xs text-gray-500 mt-1">Revenue</p>
             </div>
+          </div>
+        )}
+
+        {events.length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <h2 className="font-semibold text-lg mb-4">Revenue by Event</h2>
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={events.map(e => ({ name: e.title?.substring(0, 18) + (e.title?.length > 18 ? '...' : ''), revenue: parseFloat(e.revenue || 0), sold: parseInt(e.tickets_sold || 0) }))}>
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Bar dataKey="revenue" fill="#16a34a" name="Revenue (K)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         )}
 

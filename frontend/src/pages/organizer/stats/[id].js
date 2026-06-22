@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getEventStats, exportAttendees, getSalesReport } from '../../../services/api';
 import toast from 'react-hot-toast';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+
+const COLORS = ['#2563eb', '#7c3aed', '#db2777', '#ea580c', '#16a34a', '#ca8a04', '#0891b2'];
 
 export default function EventStats() {
   const router = useRouter();
@@ -52,15 +55,27 @@ export default function EventStats() {
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" /></div>;
   if (!stats) return <div className="min-h-screen flex items-center justify-center text-gray-500">Stats not found</div>;
 
+  const pieData = (stats.ticket_types || []).map((tt) => ({
+    name: tt.name,
+    sold: parseInt(tt.sold),
+    available: parseInt(tt.available),
+  }));
+
+  const revenueData = salesReport.map((row) => ({
+    period: row.period,
+    revenue: parseFloat(row.revenue),
+    tickets: parseInt(row.tickets),
+  }));
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
-        <nav className="max-w-4xl mx-auto px-4 py-4">
+        <nav className="max-w-6xl mx-auto px-4 py-4">
           <Link href="/organizer/dashboard" className="text-xl font-bold text-blue-600"><span aria-hidden="true">←</span> Dashboard</Link>
         </nav>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">{stats.event_title} - Statistics</h1>
           <button onClick={handleExport} disabled={exporting}
@@ -87,6 +102,49 @@ export default function EventStats() {
             <p className="text-sm text-gray-500 mt-1">Active Tickets</p>
           </div>
         </div>
+
+        {revenueData.length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <h2 className="font-semibold text-lg mb-4">Revenue Over Time</h2>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={revenueData}>
+                <XAxis dataKey="period" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Bar dataKey="revenue" fill="#2563eb" name="Revenue (K)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {pieData.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="font-semibold text-lg mb-4">Ticket Breakdown</h2>
+              <ResponsiveContainer width="100%" height={260}>
+                <PieChart>
+                  <Pie data={pieData.map(d => ({ ...d, value: d.sold }))} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                    {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="font-semibold text-lg mb-4">Sold vs Available</h2>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={pieData}>
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <Tooltip />
+                  <Bar dataKey="sold" fill="#2563eb" name="Sold" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="available" fill="#93c5fd" name="Available" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <h2 className="font-semibold text-lg p-6 border-b">Sales by Ticket Type</h2>
