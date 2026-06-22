@@ -8,12 +8,13 @@ A full-stack event ticketing platform built for the Zambian market. Supports MTN
 
 | Layer | Technology |
 |-------|-----------|
-| **Backend** | Node.js 20, Express 4 |
-| **Frontend** | Next.js 14, React 18, Tailwind CSS 3 |
+| **Backend** | Node.js 20, Express 4 — hosted on [Render](https://render.com) |
+| **Frontend** | Next.js 14, React 18, Tailwind CSS 3 — hosted on [Vercel](https://vercel.com) |
 | **Database** | PostgreSQL 16 (Neon Serverless) |
 | **Cache** | Redis 7 (optional — degrades gracefully) |
 | **Real-time** | Socket.IO 4 |
-| **Auth** | JWT (access 10min + refresh 7d), bcryptjs, CSRF double-submit cookie |
+| **Auth** | JWT (access 10min + refresh 7d) + Google OAuth (Firebase), bcryptjs, CSRF double-submit cookie |
+| **Media** | [Cloudinary](https://cloudinary.com) (image upload, CDN, auto-format & quality) |
 | **Payments** | MTN MoMo / Airtel Money / Zamtel Kwacha (stub — needs live API keys) |
 
 ---
@@ -184,6 +185,11 @@ event-ticketing/
 | POST | `/api/scanner/validate` | Bearer | Validate ticket code + check-in |
 | POST | `/api/scanner/check-in` | Bearer | Mark ticket as used |
 
+### Upload
+| Method | Route | Auth | Description |
+|--------|-------|------|-------------|
+| POST | `/api/upload` | organizer/super_admin | Upload image (JPEG/PNG/GIF/WebP, max 10MB) → returns Cloudinary secure URL |
+
 ### Notifications
 | Method | Route | Auth | Description |
 |--------|-------|------|-------------|
@@ -319,6 +325,6 @@ Migration files must be numbered sequentially (`001_`, `002_`). A `migrations` t
 
 - **Payment callbacks** — MTN/Airtel/Zamtel APIs are stubbed. Tickets never auto-generate after purchase because the callback is never triggered. Needs either a dev auto-complete endpoint or live API credentials.
 - **Email/SMS delivery** — Nodemailer is configured but needs SMTP credentials. SMS needs an API provider.
-- **Banner image upload** — Cloudinary is in `package.json` but upload endpoint not wired; `multer` is available.
+- **Banner image upload** — Cloudinary upload endpoint (`POST /api/upload`) is wired on the backend. Frontend upload UI is in the create/edit event form.
 - **Seed users** — Bcrypt hashes in `seed.sql` are hardcoded placeholders. Register fresh accounts instead.
 - **Redis** — Optional. Server runs fine without it; caching is disabled.

@@ -15,6 +15,7 @@ const scannerRoutes = require('./routes/scanner');
 const adminRoutes = require('./routes/admin');
 const notificationRoutes = require('./routes/notifications');
 const organizerRoutes = require('./routes/organizer');
+const uploadRoutes = require('./routes/upload');
 const healthRoutes = require('./routes/health');
 
 const app = express();
@@ -54,6 +55,7 @@ app.use('/api/scanner', scannerLimiter, scannerRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/organizer', organizerRoutes);
+app.use('/api/upload', uploadRoutes);
 
 app.use(errorHandler);
 
