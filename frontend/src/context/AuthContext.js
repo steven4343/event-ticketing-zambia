@@ -66,10 +66,12 @@ export function AuthProvider({ children }) {
             api.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
             const me = await api.get('/auth/me');
             setUser(me.data);
-          } catch {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('token');
-            localStorage.removeItem('refreshToken');
+          } catch (err) {
+            if (err.response?.status !== 429) {
+              localStorage.removeItem('accessToken');
+              localStorage.removeItem('token');
+              localStorage.removeItem('refreshToken');
+            }
           }
         }
         setLoading(false);
@@ -80,9 +82,11 @@ export function AuthProvider({ children }) {
         const { data } = await api.get('/auth/me');
         setUser(data);
         resetInactivityTimer();
-      } catch {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('token');
+      } catch (err) {
+        if (err.response?.status !== 429) {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('token');
+        }
       }
       setLoading(false);
     };

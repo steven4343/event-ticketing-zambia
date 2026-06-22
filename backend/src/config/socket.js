@@ -5,7 +5,18 @@ let io = null;
 const initSocket = (httpServer) => {
   io = new Server(httpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+      origin: (origin, callback) => {
+        const allowed = [
+          process.env.FRONTEND_URL,
+          'http://localhost:3000',
+          'https://event-ticketing-zambia.vercel.app',
+        ];
+        if (!origin || allowed.some(o => o && origin.startsWith(o)) || origin.endsWith('.vercel.app')) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
       credentials: true,
     },
     path: process.env.SOCKET_PATH || '/socket.io',
