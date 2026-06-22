@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { getMyTickets } from '../services/api';
+import api, { getMyTickets } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { QRCodeSVG } from 'qrcode.react';
 import Breadcrumbs from '../components/Breadcrumbs';
 import NotificationBell from '../components/NotificationBell';
 import EmptyState from '../components/EmptyState';
+import toast from 'react-hot-toast';
 
 export default function MyTickets() {
   const { user } = useAuth();
@@ -34,6 +35,23 @@ export default function MyTickets() {
 
   const toggleCode = (id) => {
     setExpandedCodes(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const downloadPdf = async (ticketId) => {
+    try {
+      const response = await api.get(`/tickets/download/${ticketId}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `ticket-${ticketId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Downloading ticket PDF');
+    } catch {
+      toast.error('Failed to download ticket');
+    }
   };
 
   return (
@@ -92,6 +110,10 @@ export default function MyTickets() {
                       }`}>
                         {ticket.status === 'active' ? 'Active' : ticket.status === 'used' ? 'Used' : 'Cancelled'}
                       </span>
+                      <button onClick={() => downloadPdf(ticket.id)}
+                        className="text-blue-600 text-sm hover:underline whitespace-nowrap">
+                        Download PDF
+                      </button>
                       <button onClick={() => toggleCode(ticket.id)}
                         className="text-blue-600 text-sm hover:underline whitespace-nowrap">
                         {expandedCodes[ticket.id] ? 'Hide QR' : 'Show QR'}

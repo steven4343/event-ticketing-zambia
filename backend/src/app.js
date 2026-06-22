@@ -18,6 +18,7 @@ const organizerRoutes = require('./routes/organizer');
 const uploadRoutes = require('./routes/upload');
 const devRoutes = require('./routes/dev');
 const healthRoutes = require('./routes/health');
+const extendRoutes = require('./routes/extend');
 
 const app = express();
 
@@ -58,6 +59,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/organizer', organizerRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/dev', devRoutes);
+app.use('/api', extendRoutes);
 
 app.use(errorHandler);
 

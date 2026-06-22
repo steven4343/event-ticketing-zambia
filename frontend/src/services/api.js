@@ -118,4 +118,53 @@ export const getNotifications = (params) => api.get('/notifications', { params }
 export const markNotificationRead = (id) => api.patch(`/notifications/${id}/read`);
 export const markAllNotificationsRead = () => api.post('/notifications/read-all');
 
+// Waitlist
+export const joinWaitlist = (data) => api.post('/waitlist', data);
+export const leaveWaitlist = (id) => api.delete(`/waitlist/${id}`);
+export const getMyWaitlist = () => api.get('/waitlist');
+
+// Affiliate
+export const getMyAffiliate = () => api.get('/affiliate');
+export const getAffiliateOrders = () => api.get('/affiliate/orders');
+
+// Subscriptions
+export const getMySubscription = () => api.get('/subscription');
+export const subscribe = (plan) => api.post('/subscription', { plan });
+export const cancelSubscription = () => api.delete('/subscription');
+
+// Refunds
+export const requestRefund = (data) => api.post('/refunds', data);
+export const listRefunds = () => api.get('/refunds');
+export const processRefund = (id, status) => api.patch(`/refunds/${id}`, { status });
+
+// Organizer approval
+export const listPendingOrganizers = () => api.get('/admin/organizers');
+export const reviewOrganizer = (id, status) => api.patch(`/admin/organizers/${id}/review`, { status });
+
+// Profile / Bank details
+export const getMyProfile = () => api.get('/profile');
+export const updateMyProfile = (data) => api.put('/profile', data);
+
+// Commission override
+export const updateOrganizerCommission = (id, commission_rate) => api.patch(`/admin/organizers/${id}/commission`, { commission_rate });
+
+// Settings update
+export const updatePlatformSettings = (settings) => api.put('/admin/settings', { settings });
+
+// Ticket type toggle
+export const toggleTicketType = (id, is_active) => api.patch(`/ticket-types/${id}/toggle`, { is_active });
+
+// Discount codes
+export const listDiscountCodes = () => api.get('/discount-codes');
+export const createDiscountCode = (data) => api.post('/discount-codes', data);
+export const updateDiscountCode = (id, data) => api.patch(`/discount-codes/${id}`, data);
+export const deleteDiscountCode = (id) => api.delete(`/discount-codes/${id}`);
+
+// Admin subscriptions
+export const listAllSubscriptions = () => api.get('/admin/subscriptions');
+
+// Scanner sync
+export const syncEventTickets = (eventId) => api.get(`/scanner/sync/${eventId}`);
+export const bulkCheckIn = (checkIns) => api.post('/scanner/bulk-checkin', { check_ins: checkIns });
+
 export default api;

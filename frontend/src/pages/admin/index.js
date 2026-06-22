@@ -39,6 +39,9 @@ export default function AdminDashboard() {
             <NotificationBell />
             <Link href="/admin/users" className="text-blue-600 text-xs sm:text-sm">Users</Link>
             <Link href="/admin/events" className="text-blue-600 text-xs sm:text-sm">Events</Link>
+            <Link href="/admin/organizers" className="text-blue-600 text-xs sm:text-sm">Organizers</Link>
+            <Link href="/admin/subscriptions" className="text-blue-600 text-xs sm:text-sm">Subscriptions</Link>
+            <Link href="/admin/settings" className="text-blue-600 text-xs sm:text-sm">Settings</Link>
             <span className="text-xs sm:text-sm text-gray-600 truncate max-w-[80px]">{user?.name}</span>
           </div>
         </nav>

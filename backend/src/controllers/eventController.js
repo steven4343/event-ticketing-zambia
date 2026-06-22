@@ -4,7 +4,7 @@ const { emitToAll, emitToUser } = require('../config/socket');
 
 const browseEvents = async (req, res, next) => {
   try {
-    const { page = 1, limit = 20, search, date_from, date_to, category_id } = req.query;
+    const { page = 1, limit = 20, search, date_from, date_to, category_id, city, region } = req.query;
     const offset = (page - 1) * limit;
     const cacheKey = `events:list:${page}:${limit}:${search || ''}:${date_from || ''}:${date_to || ''}:${category_id || ''}`;
 
@@ -44,6 +44,16 @@ const browseEvents = async (req, res, next) => {
       if (category_id) {
         query += ` AND e.category_id = $${paramIndex}`;
         params.push(category_id);
+        paramIndex++;
+      }
+      if (city) {
+        query += ` AND e.city ILIKE $${paramIndex}`;
+        params.push(city);
+        paramIndex++;
+      }
+      if (region) {
+        query += ` AND e.region ILIKE $${paramIndex}`;
+        params.push(region);
         paramIndex++;
       }
 

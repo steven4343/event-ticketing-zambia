@@ -6,7 +6,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { connectSocket, disconnectSocket } from '../services/socket';
 
-const publicPaths = ['/', '/login', '/register', '/events/', '/events/[id]'];
+const publicPaths = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/events/', '/events/[id]'];
 
 function AuthGuard({ children }) {
   const { user, loading } = useAuth();

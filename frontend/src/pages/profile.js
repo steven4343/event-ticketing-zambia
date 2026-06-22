@@ -1,118 +1,96 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { useAuth } from '../context/AuthContext';
-import { changePassword as changePasswordApi } from '../services/api';
 import Breadcrumbs from '../components/Breadcrumbs';
 import NotificationBell from '../components/NotificationBell';
 import toast from 'react-hot-toast';
+import { getMyProfile, updateMyProfile } from '../services/api';
 
 export default function Profile() {
-  const { user, logout } = useAuth();
   const router = useRouter();
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
-  const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
-  const [changing, setChanging] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ name: '', phone: '' });
+  const [bank, setBank] = useState({ bank_name: '', account_name: '', account_number: '', branch: '' });
 
-  if (!user) {
-    router.push('/login');
-    return null;
-  }
+  useEffect(() => {
+    getMyProfile().then(({ data }) => {
+      setForm({ name: data.user.name, phone: data.user.phone });
+      if (data.bank_details) setBank(data.bank_details);
+    }).catch(() => toast.error('Failed to load profile'))
+    .finally(() => setLoading(false));
+  }, []);
 
-  const handleChangePassword = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (pwForm.newPassword !== pwForm.confirmPassword) {
-      return toast.error('Passwords do not match');
-    }
-    if (pwForm.newPassword.length < 8) {
-      return toast.error('Password must be at least 8 characters');
-    }
-    setChanging(true);
+    setSaving(true);
     try {
-      await changePasswordApi({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword });
-      toast.success('Password changed. Please login again.');
-      await logout();
+      await updateMyProfile({ ...form, bank_details: bank });
+      toast.success('Profile updated');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to change password');
-    } finally {
-      setChanging(false);
-    }
+      toast.error(err.response?.data?.error || 'Update failed');
+    } finally { setSaving(false); }
   };
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" /></div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
-        <nav className="max-w-3xl mx-auto px-4 py-4 flex flex-wrap items-center gap-2">
-          <Link href="/" className="text-lg sm:text-xl font-bold text-blue-600">EventHub Zambia</Link>
-          <div className="flex items-center gap-2 sm:gap-4 ml-auto">
-            <NotificationBell />
-            <button onClick={logout} className="text-red-600 text-sm font-medium">Logout</button>
-          </div>
+        <nav className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
+          <Link href="/" className="text-xl font-bold text-blue-600">EventHub Zambia</Link>
+          <div className="ml-auto"><NotificationBell /></div>
         </nav>
       </header>
-
-      <main className="max-w-3xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-8">
         <Breadcrumbs pathname={router.pathname} />
         <h1 className="text-2xl font-bold mb-6">My Profile</h1>
-
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+            <h2 className="font-semibold text-lg">Personal Info</h2>
             <div>
-              <label className="text-sm text-gray-500">Name</label>
-              <p className="font-medium">{user.name}</p>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required
+                className="w-full px-4 py-2 border rounded-lg" />
             </div>
             <div>
-              <label className="text-sm text-gray-500">Email</label>
-              <p className="font-medium">{user.email}</p>
-            </div>
-            <div>
-              <label className="text-sm text-gray-500">Phone</label>
-              <p className="font-medium">{user.phone}</p>
-            </div>
-            <div>
-              <label className="text-sm text-gray-500">Role</label>
-              <p className="font-medium capitalize">{user.role?.replace('_', ' ')}</p>
-            </div>
-            <div>
-              <label className="text-sm text-gray-500">Member Since</label>
-              <p className="font-medium">{new Date(user.created_at).toLocaleDateString()}</p>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+              <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required
+                className="w-full px-4 py-2 border rounded-lg" />
             </div>
           </div>
-        </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <button onClick={() => setShowPasswordForm(!showPasswordForm)}
-            className="text-blue-600 font-medium hover:underline">
-            {showPasswordForm ? 'Cancel' : 'Change Password'}
+          <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+            <h2 className="font-semibold text-lg">Bank Details (for payouts)</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+                <input type="text" value={bank.bank_name} onChange={(e) => setBank({ ...bank, bank_name: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-lg" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Account Name</label>
+                <input type="text" value={bank.account_name} onChange={(e) => setBank({ ...bank, account_name: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-lg" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
+                <input type="text" value={bank.account_number} onChange={(e) => setBank({ ...bank, account_number: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-lg" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+                <input type="text" value={bank.branch} onChange={(e) => setBank({ ...bank, branch: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-lg" />
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" disabled={saving}
+            className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold disabled:opacity-50 hover:bg-blue-700">
+            {saving ? 'Saving...' : 'Update Profile'}
           </button>
-
-          {showPasswordForm && (
-            <form onSubmit={handleChangePassword} className="mt-4 space-y-4 max-w-md">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-                <input type="password" value={pwForm.currentPassword}
-                  onChange={(e) => setPwForm({ ...pwForm, currentPassword: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                <input type="password" value={pwForm.newPassword}
-                  onChange={(e) => setPwForm({ ...pwForm, newPassword: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" required minLength={8} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                <input type="password" value={pwForm.confirmPassword}
-                  onChange={(e) => setPwForm({ ...pwForm, confirmPassword: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" required />
-              </div>
-              <button type="submit" disabled={changing}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium disabled:opacity-50 hover:bg-blue-700">
-                {changing ? 'Changing...' : 'Update Password'}
-              </button>
-            </form>
-          )}
-        </div>
+        </form>
       </main>
     </div>
   );

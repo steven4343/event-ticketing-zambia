@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getEvent, purchaseTickets } from '../../services/api';
+import api, { getEvent, purchaseTickets } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import Breadcrumbs from '../../components/Breadcrumbs';
@@ -19,6 +19,20 @@ export default function EventDetail() {
   const [provider, setProvider] = useState('mtn');
   const [purchasing, setPurchasing] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [discountCode, setDiscountCode] = useState('');
+  const [discountApplied, setDiscountApplied] = useState(null);
+  const [waitlistLoading, setWaitlistLoading] = useState(false);
+
+  const joinWaitlist = async (ticketTypeId) => {
+    if (!user) { toast.error('Login to join waitlist'); router.push('/login'); return; }
+    setWaitlistLoading(true);
+    try {
+      await api.post('/waitlist', { event_id: id, ticket_type_id: ticketTypeId });
+      toast.success('Added to waitlist! We\'ll notify you when tickets reopen.');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to join waitlist');
+    } finally { setWaitlistLoading(false); }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -63,10 +77,13 @@ export default function EventDetail() {
         .filter(([_, qty]) => qty > 0)
         .map(([typeId, qty]) => ({ ticket_type_id: typeId, quantity: qty }));
 
-      const { data } = await purchaseTickets({
+      const payload = {
         event_id: id, tickets,
         payment_provider: provider, phone,
-      });
+      };
+      if (discountCode) payload.discount_code = discountCode;
+
+      const { data } = await purchaseTickets(payload);
 
       toast.success('Payment request sent! Check your phone.');
       router.push('/tickets');
@@ -115,7 +132,7 @@ export default function EventDetail() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">{event.title}</h1>
             <div className="flex flex-wrap gap-4 text-gray-600 mb-4">
               <span><span role="img" aria-label="Date">📅</span> {new Date(event.event_date).toLocaleDateString()} at {event.event_time?.substring(0, 5)}</span>
-              <span><span role="img" aria-label="Location">📍</span> {event.venue}</span>
+              <span><span role="img" aria-label="Location">📍</span> {event.venue}{event.city ? `, ${event.city}` : ''}{event.region ? ` (${event.region})` : ''}</span>
               {event.category_name && <span><span role="img" aria-label="Category">🏷️</span> {event.category_name}</span>}
             </div>
             <p className="text-gray-700 mb-6">{event.description}</p>
@@ -133,13 +150,20 @@ export default function EventDetail() {
               </div>
               <div className="text-right">
                 <p className="text-xl font-bold text-blue-600">K{parseFloat(tt.price).toFixed(2)}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <button onClick={() => updateQuantity(tt.id, -1)} disabled={!selectedTickets[tt.id]}
-                    className="w-8 h-8 rounded-full bg-gray-200 font-bold disabled:opacity-30 hover:bg-gray-300 transition" aria-label="Decrease quantity">-</button>
-                  <span className="w-8 text-center font-semibold" aria-live="polite">{selectedTickets[tt.id] || 0}</span>
-                  <button onClick={() => updateQuantity(tt.id, 1)} disabled={selectedTickets[tt.id] >= tt.available}
-                    className="w-8 h-8 rounded-full bg-gray-200 font-bold disabled:opacity-30 hover:bg-gray-300 transition" aria-label="Increase quantity">+</button>
-                </div>
+                {tt.available > 0 ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <button onClick={() => updateQuantity(tt.id, -1)} disabled={!selectedTickets[tt.id]}
+                      className="w-8 h-8 rounded-full bg-gray-200 font-bold disabled:opacity-30 hover:bg-gray-300 transition" aria-label="Decrease quantity">-</button>
+                    <span className="w-8 text-center font-semibold" aria-live="polite">{selectedTickets[tt.id] || 0}</span>
+                    <button onClick={() => updateQuantity(tt.id, 1)} disabled={selectedTickets[tt.id] >= tt.available}
+                      className="w-8 h-8 rounded-full bg-gray-200 font-bold disabled:opacity-30 hover:bg-gray-300 transition" aria-label="Increase quantity">+</button>
+                  </div>
+                ) : (
+                  <button onClick={() => joinWaitlist(tt.id)} disabled={waitlistLoading}
+                    className="mt-1 text-sm text-orange-600 hover:underline disabled:opacity-50">
+                    {waitlistLoading ? 'Joining...' : 'Sold Out - Join Waitlist'}
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -159,6 +183,21 @@ export default function EventDetail() {
                 <option value="zamtel">Zamtel Kwacha</option>
               </select>
             </div>
+          </div>
+
+          <div className="mt-6 p-4 border rounded-lg">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Discount Code</label>
+            <div className="flex gap-2">
+              <input type="text" value={discountCode} onChange={(e) => { setDiscountCode(e.target.value); setDiscountApplied(null); }}
+                placeholder="Enter code" className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 uppercase" />
+              <button type="button" onClick={() => {
+                if (discountCode) setDiscountApplied({ code: discountCode, type: 'pending' });
+                else toast.error('Enter a code first');
+              }} className="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700">Apply</button>
+            </div>
+            {discountApplied && (
+              <p className="text-green-600 text-sm mt-1">Code "{discountApplied.code}" will be applied at checkout</p>
+            )}
           </div>
 
           <div className="mt-6 flex items-center justify-between p-4 bg-gray-50 rounded-lg">

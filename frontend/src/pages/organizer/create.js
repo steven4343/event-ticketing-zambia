@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { createEvent, updateEvent, getEvent, getCategories, uploadImage } from '../../services/api';
+import { createEvent, updateEvent, getEvent, getCategories, uploadImage, toggleTicketType } from '../../services/api';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import toast from 'react-hot-toast';
 
@@ -12,9 +12,10 @@ export default function CreateEvent() {
   const [categories, setCategories] = useState([]);
   const [form, setForm] = useState({
     title: '', description: '', venue: '', event_date: '', event_time: '', category_id: '', banner_image: '',
+    city: '', region: '',
   });
   const [ticketTypes, setTicketTypes] = useState([
-    { name: 'Regular', description: 'Standard entry', price: '', quantity: '' },
+    { name: 'Regular', description: 'Standard entry', price: '', quantity: '', sale_start: '', sale_end: '', max_per_order: 10 },
   ]);
   const [bannerFile, setBannerFile] = useState(null);
   const [bannerPreview, setBannerPreview] = useState('');
@@ -39,6 +40,8 @@ export default function CreateEvent() {
           event_time: data.event_time?.substring(0, 5) || '',
           category_id: data.category_id || '',
           banner_image: data.banner_image || '',
+          city: data.city || '',
+          region: data.region || '',
         });
         if (data.banner_image) setBannerPreview(data.banner_image);
         if (data.ticket_types?.length) {
@@ -47,6 +50,9 @@ export default function CreateEvent() {
             description: tt.description || '',
             price: String(tt.price),
             quantity: String(tt.quantity),
+            sale_start: tt.sale_start ? tt.sale_start.substring(0, 16) : '',
+            sale_end: tt.sale_end ? tt.sale_end.substring(0, 16) : '',
+            max_per_order: tt.max_per_order || 10,
           })));
         }
       } catch (err) {
@@ -60,7 +66,7 @@ export default function CreateEvent() {
   }, [id, router]);
 
   const addTicketType = () => {
-    setTicketTypes([...ticketTypes, { name: '', description: '', price: '', quantity: '' }]);
+    setTicketTypes([...ticketTypes, { name: '', description: '', price: '', quantity: '', sale_start: '', sale_end: '', max_per_order: 10 }]);
   };
 
   const removeTicketType = (index) => {
@@ -94,9 +100,13 @@ export default function CreateEvent() {
         banner_image: bannerUrl,
         category_id: form.category_id || null,
         ticket_types: ticketTypes.map(tt => ({
-          ...tt,
+          name: tt.name,
+          description: tt.description,
           price: parseFloat(tt.price),
           quantity: parseInt(tt.quantity),
+          max_per_order: parseInt(tt.max_per_order) || 10,
+          sale_start: tt.sale_start ? new Date(tt.sale_start).toISOString() : null,
+          sale_end: tt.sale_end ? new Date(tt.sale_end).toISOString() : null,
         })),
       };
 
@@ -189,6 +199,30 @@ export default function CreateEvent() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                <input type="text" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  placeholder="e.g. Lusaka" className="w-full px-4 py-2 border rounded-lg" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Region</label>
+                <select value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-lg bg-white">
+                  <option value="">Select region</option>
+                  <option value="Lusaka">Lusaka</option>
+                  <option value="Copperbelt">Copperbelt</option>
+                  <option value="Southern">Southern</option>
+                  <option value="Central">Central</option>
+                  <option value="Eastern">Eastern</option>
+                  <option value="Western">Western</option>
+                  <option value="Northern">Northern</option>
+                  <option value="Luapula">Luapula</option>
+                  <option value="Muchinga">Muchinga</option>
+                  <option value="North-Western">North-Western</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
                 <input type="date" value={form.event_date} onChange={(e) => setForm({ ...form, event_date: e.target.value })} required
                   className="w-full px-4 py-2 border rounded-lg" />
@@ -236,6 +270,21 @@ export default function CreateEvent() {
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Quantity</label>
                     <input type="number" value={tt.quantity} onChange={(e) => updateTicketType(idx, 'quantity', e.target.value)} required min="1"
+                      className="w-full px-3 py-2 border rounded-lg" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Max Per Order</label>
+                    <input type="number" value={tt.max_per_order} onChange={(e) => updateTicketType(idx, 'max_per_order', e.target.value)} min="1"
+                      className="w-full px-3 py-2 border rounded-lg" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Sale Start</label>
+                    <input type="datetime-local" value={tt.sale_start} onChange={(e) => updateTicketType(idx, 'sale_start', e.target.value)}
+                      className="w-full px-3 py-2 border rounded-lg" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Sale End</label>
+                    <input type="datetime-local" value={tt.sale_end} onChange={(e) => updateTicketType(idx, 'sale_end', e.target.value)}
                       className="w-full px-3 py-2 border rounded-lg" />
                   </div>
                 </div>

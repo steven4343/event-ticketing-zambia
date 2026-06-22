@@ -33,4 +33,27 @@ const sendTicketEmail = async (to, ticketData) => {
   }
 };
 
-module.exports = { sendTicketEmail };
+const sendResetEmail = async (to, name, resetUrl) => {
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to,
+      subject: 'Reset your EventHub Zambia password',
+      html: `
+        <h2>Password Reset</h2>
+        <p>Hi ${name},</p>
+        <p>Click the link below to reset your password. This link expires in 1 hour.</p>
+        <p><a href="${resetUrl}" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">Reset Password</a></p>
+        <p>If you didn't request this, ignore this email.</p>
+        <br/>
+        <p>EventHub Zambia</p>
+      `,
+    });
+    return true;
+  } catch (error) {
+    console.error('Reset email send failed:', error.message);
+    return false;
+  }
+};
+
+module.exports = { sendTicketEmail, sendResetEmail };
